@@ -1,51 +1,73 @@
-import { api, API_URL } from "../api";
-import { useHorsesStore } from "../store/useHorseStore";
-import type { Horse } from "../types";
-import { breed_labels, gender_labels, specialization_labels } from "../util";
+import { API_URL } from "../api"
+import type { Horse } from "../types"
+import { breed_labels, gender_labels, specialization_labels } from "../util"
 
-interface IHorseCard extends Horse {
-onDelete: (documentId: string) => void
+interface IHorseCardProps extends Horse {
+    onDelete: (documentId: string) => void
 }
-export function EntityCard({name,documentId,DOB, height, breed, training, fotochka, owner,suit, gender, specialization }: IHorseCard) {
-    
-     const { getHorses } = useHorsesStore()
-    
-    const handleDelete = async () => {
-        await api.deleteHorse(documentId)
-        getHorses()
-    }
+
+export function EntityCard({
+    name,
+    documentId,
+    DOB,
+    height,
+    breed,
+    training,
+    fotochka,
+    owner,
+    suit,
+    gender,
+    specialization,
+    onDelete,
+}: IHorseCardProps) {
+    const imageUrl =
+        fotochka && fotochka.length > 0 ? `${API_URL}${fotochka[0].url}` : null
 
     return (
         <article className="card">
             <div className="card__cover">
-                {fotochka && fotochka.length > 0 ? (
-                    <img src={API_URL + fotochka[0].url} alt={fotochka[0].alternativeText ?? name} />
+                {imageUrl ? (
+                    <img
+                        src={imageUrl}
+                        alt={fotochka![0].alternativeText ?? name}
+                    />
                 ) : (
-                    <span>{name[0]}</span>
+                    <span>{name.charAt(0).toUpperCase()}</span>
                 )}
-                {height !== null && <b className="card__badge">{height} см</b>}
+                {height != null && <b className="card__badge">{height} см</b>}
             </div>
-
             <div className="card__body">
                 <h3>{name}</h3>
-
                 {suit && <p className="card__desc">Масть: {suit}</p>}
-
-                {breed && <p className="card__meta">Порода: {breed_labels[breed]}</p>}
-                
-                {gender && <p className="card__meta">Пол: {gender_labels[gender]}</p>}
-                
-                {DOB && <p className="card__meta">Дата рождения: {new Date(DOB).toLocaleDateString("ru-RU")}</p>}
-                
+                <p className="card__meta">
+                    Порода: {breed_labels[breed]} · Пол: {gender_labels[gender]}
+                </p>
+                {DOB && (
+                    <p className="card__meta">
+                        Дата рождения:{" "}
+                        {new Date(DOB).toLocaleDateString("ru-RU")}
+                    </p>
+                )}
                 {owner && <p className="card__meta">Владелец: {owner}</p>}
-                
-                <p className="card__meta">Обучена: {training ? "Да" : "Нет"}</p>
-                
-                {specialization && <p className="card__meta">Специализация: {specialization_labels[specialization]}</p>}
+                {training != null && (
+                    <p className="card__meta">
+                        Обучена: {training ? "Да" : "Нет"}
+                    </p>
+                )}
+                {specialization && (
+                    <p className="card__meta">
+                        Специализация: {specialization_labels[specialization]}
+                    </p>
+                )}
             </div>
-
             <footer className="card__footer">
-                <button onClick={handleDelete} className="link-btn">Удалить</button>
+                <strong>{name}</strong>
+                <button
+                    className="link-btn"
+                    onClick={() => onDelete(documentId)}
+                >
+                    Удалить
+                </button>
             </footer>
         </article>
     )

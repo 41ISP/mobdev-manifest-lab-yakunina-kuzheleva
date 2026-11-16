@@ -1,74 +1,55 @@
 import { EntityCard } from "./components/EntityCard"
 import { EntityForm } from "./components/EntityForm"
-import "./App.css"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { useHorsesStore } from "./store/useHorseStore"
+import "./App.css"
 
 export default function App() {
-    const { horses, getHorses } = useHorsesStore()
-    const [error, setIsError] = useState<string | null>(null)
-    const [loading, setIsLoading] = useState<boolean>(false)
+    const { horses, isLoading, error, getHorses, removeHorse } = useHorsesStore()
 
     useEffect(() => {
-        const load = async () => {
-            setIsLoading(true)
-            setIsError(null)
-            try {
-                await getHorses()
-            } catch (error) {
-                console.error(error)
-                setIsError('Что то  пошло не так')
-            } finally {
-                setIsLoading(false)
-            }
-        }
-        load()
-   const intervalId = setInterval(() => {
-            try {
-                getHorses()
-            } catch (error) {
-                console.error(error)
-            }
-        }, 5000)
-        return () => {
-            clearInterval(intervalId)
-        }
+        getHorses()
     }, [])
 
-    useEffect(() => {
-        console.log(horses)
-    }, [horses])
+    const horsesCount = horses?.length ?? 0
+
+    if (isLoading && horses.length === 0) {
+        return (
+            <div className="layout">
+                <header className="top">
+                    <h1>Мои лошадки</h1>
+                </header>
+                <main>
+                    <p className="hint">Загрузка…</p>
+                </main>
+            </div>
+        )
+    }
 
     return (
         <div className="layout">
             <header className="top">
                 <h1>Мои лошадки</h1>
-                {horses?.meta && (
-                    <span>{horses?.meta?.pagination.total} в коллекции</span>
-                )}
+                <span className="pill">{horsesCount}</span>
             </header>
-
             <aside>
                 <EntityForm />
             </aside>
-
             <main>
-                {error && <p className="error">Ошибка: </p>}
-                {loading && <p className="hint">Загружаем игры…</p>}
-
-                 {!loading && !error && horses?.data && horses.data.length > 0 ? (
-                    <div className="grid">
-
-                        {horses.data.map((el) => (
-                            <EntityCard key={el.id}{...el} />
-
-                        ))}
-                    </div> 
-                 ):<p className="hint">
-                        Добавьте первую информацию......
-                    </p>}
+                {error && <p className="error">Ошибка: {error}</p>}
+                {!isLoading && horsesCount === 0 && !error && (
+                    <p className="hint">Добавьте первую лошадь</p>
+                )}
+                <div className="grid">
+                    {horses?.map((horse) => (
+                        <EntityCard
+                            key={horse.documentId}
+                            {...horse}
+                            onDelete={removeHorse}
+                        />
+                    ))}
+                </div>
             </main>
-
         </div>
     )
 }

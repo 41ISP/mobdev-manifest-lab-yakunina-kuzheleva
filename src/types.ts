@@ -5,26 +5,25 @@ export interface  IStrapiResponse<T> {
   meta: Meta
 }
 
-
-
-export type IHorseInput = Omit<Horse, "id" | "documentId" | "createdAt" | "updatedAt" | "publishedAt">
+export type IHorseInput = Omit<
+    Horse, "id" | "documentId" | "createdAt" | "updatedAt" | "publishedAt" | "fotochka">
 
 export interface Horse {
-  id: number
-  documentId: string
-  name: string
-  DOB: string
-  createdAt: string
-  updatedAt: string
-  publishedAt: string
-  owner: string
-  suit: string
-  height: number
-  training: boolean
-  specialization: Specialization
-  breed: Breed
-  gender: Gender
-  fotochka?: Fotochka[]
+    id: number
+    documentId: string
+    name: string
+    DOB?: string | null
+    createdAt: string
+    updatedAt: string
+    publishedAt: string
+    owner?: string | null
+    suit?: string | null
+    height?: number | null
+    training?: boolean | null
+    specialization?: Specialization | null
+    breed: Breed
+    gender: Gender
+    fotochka?: Fotochka[] | null
 }
 
 export interface Fotochka {

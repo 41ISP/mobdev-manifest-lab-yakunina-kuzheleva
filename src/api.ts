@@ -12,13 +12,13 @@ export const apiInstance = axios.create({
 
 })
 
-const getHorses = async (): Promise<IStrapiResponse<Horse[]>> => {
+const getHorses = async (): Promise<Horse[]> => {
     const res = await apiInstance.get<IStrapiResponse<Horse[]>>('/horses', {
         params: {
             populate: '*',
         },
     })
-    return res.data
+    return res.data.data
 }
 
 const createHorse = (data: IHorseInput) =>

@@ -1,48 +1,57 @@
-import { create } from "zustand";
-import type { Horse, IHorseInput, IStrapiResponse } from "../types";
-import { api } from "../api";
+import { create } from "zustand"
+import { api } from "../api"
+import type { Horse, IHorseInput } from "../types"
 
 interface IHorseStore {
-    horses: IStrapiResponse<Horse[]> | undefined,
+    horses: Horse[]
+    isLoading: boolean
+    error: string | null
     getHorses: () => Promise<void>
     addHorse: (data: IHorseInput) => Promise<void>
     removeHorse: (documentId: string) => Promise<void>
 }
 
-//const is load,error
-export const useHorsesStore = create<IHorseStore>((set) => ({
-    horses: undefined,
+export const useHorsesStore = create<IHorseStore>((set, get) => ({
+    horses: [],
+    isLoading: false,
+    error: null,
+    
     getHorses: async () => {
+        set({ isLoading: true, error: null })
         try {
-           const res = await api.getHorses()
-           set({ horses: res }) 
-        } catch (error) {
-           console.error(error) 
+            const res = await api.getHorses()
+            set({ horses: res }) 
+        } catch (error: any) {
+            const msg = error.response?.data?.error?.message || "Ошибка загрузки"
+            set({ error: msg })
+        } finally {
+            set({ isLoading: false })
         }
     },
+    
     addHorse: async (data: IHorseInput) => {
         set({ isLoading: true, error: null })
         try {
             await api.createHorse(data)
-            await get().fetchHorses()
-        } catch (error) {
-            const message =
-                error instanceof Error ? error.message : "Ошибка при создании"
-            set({ error: message, isLoading: false })
-            throw error
+            await get().getHorses() // обновляем список
+        } catch (error: any) {
+            const msg = error.response?.data?.error?.message || "Ошибка создания"
+            set({ error: msg })
+        } finally {
+            set({ isLoading: false })
         }
     },
-
+    
     removeHorse: async (documentId: string) => {
         set({ isLoading: true, error: null })
         try {
             await api.deleteHorse(documentId)
-            await get().fetchHorses()
-        } catch (error) {
-            const message =
-                error instanceof Error ? error.message : "Ошибка при удалении"
-            set({ error: message, isLoading: false })
+            await get().getHorses()
+        } catch (error: any) {
+            const msg = error.response?.data?.error?.message || "Ошибка удаления"
+            set({ error: msg })
+        } finally {
+            set({ isLoading: false })
         }
     },
 }))
-
